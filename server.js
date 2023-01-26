@@ -1,10 +1,10 @@
 import express from "express"   // used to build the server
 
 import cors from "cors"         // cross origin resource sharing, frontend and backend
-                                // will be running on different server, so that there
-                                // is no error we are using cors.
+// will be running on different server, so that there
+// is no error we are using cors.
 
-const morgan = require("morgan"); // helps to get endpoints in our console, used for debugging.
+const morgan = require("morgan"); // helps to get endpoints in our console like GET '/', used for debugging.
 
 require("dotenv").config();     // to access environment variables
 
@@ -14,7 +14,7 @@ require("dotenv").config();     // to access environment variables
 const app = express();
 
 // MIDDLEWARE - middlewares are piece of code which are run before sending response to client(i.e. front end)
-                // middlewares should always be a function.
+// middlewares should always be a function.
 // we use 'use' keyword to use middlewares
 app.use(cors());
 app.use(express.json());
@@ -32,7 +32,7 @@ app.use(morgan("dev"));
 // ROUTES - where the client is requesting is specified by routes (for example logIn or SignUp or Upload, Download)
 // we use 'get' keyword for routes
 // get(endpoint, function_to_execute)
-app.get('/', (req, res)=>{
+app.get('/', (req, res) => {
     res.send('You Hit Server EndPoint');
 })
 
@@ -40,6 +40,6 @@ app.get('/', (req, res)=>{
 const port = process.env.PORT || 8000;
 
 // finally we can listen to our server by using listen funtion provided by express
-app.listen(port, ()=>{
+app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 })
