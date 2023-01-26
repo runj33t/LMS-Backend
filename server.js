@@ -4,6 +4,8 @@ import cors from "cors"         // cross origin resource sharing, frontend and b
 // will be running on different server, so that there
 // is no error we are using cors.
 
+import fs from "fs"             // nodejs filesytem
+
 const morgan = require("morgan"); // helps to get endpoints in our console like GET '/', used for debugging.
 
 require("dotenv").config();     // to access environment variables
@@ -32,9 +34,16 @@ app.use(morgan("dev"));
 // ROUTES - where the client is requesting is specified by routes (for example logIn or SignUp or Upload, Download)
 // we use 'get' keyword for routes
 // get(endpoint, function_to_execute)
-app.get('/', (req, res) => {
-    res.send('You Hit Server EndPoint');
-})
+// app.get('/', (req, res) => {
+//     res.send('You Hit Server EndPoint');
+// })
+// above code commented because we moved the router to the routes folder
+
+// ****  When we have more than one routes we can import them seperatley, but that would be a problem if there are 
+// 20-30 routes, better way is we can use filesystem (fs) from nodejs to autoload route files
+fs.readdirSync('./routes').map((route_file) =>
+    app.use('/api', require(`./routes/${route_file}`))
+);
 
 // on which port we want to run our backend server (the port should be different than the port where frontEnd is running)
 const port = process.env.PORT || 8000;
