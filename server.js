@@ -1,10 +1,12 @@
-import express from "express"   // used to build the server
+import express from "express";   // used to build the server
 
-import cors from "cors"         // cross origin resource sharing, frontend and backend
+import cors from "cors";         // cross origin resource sharing, frontend and backend
 // will be running on different server, so that there
 // is no error we are using cors.
 
-import fs from "fs"             // nodejs filesytem
+import fs from "fs";             // nodejs filesytem
+
+import mongoose from "mongoose";
 
 const morgan = require("morgan"); // helps to get endpoints in our console like GET '/', used for debugging.
 
@@ -15,11 +17,16 @@ require("dotenv").config();     // to access environment variables
 // with this 'app' created using express, we can deal with middlewares and routes
 const app = express();
 
+// connection with the database
+mongoose.connect(process.env.DATABASE, {})
+    .then(() => console.log("Connected To The DataBase"))
+    .catch((err) => console.log("DataBase Error :- ", err));
+
 // MIDDLEWARE - middlewares are piece of code which are run before sending response to client(i.e. front end)
 // middlewares should always be a function.
 // we use 'use' keyword to use middlewares
 app.use(cors());
-app.use(express.json());
+app.use(express.json());        // this middleware allows us to use req.body, else we will have errors
 app.use(morgan("dev"));
 // example of user defined middleware
 // app.use((req, res, next)=>{

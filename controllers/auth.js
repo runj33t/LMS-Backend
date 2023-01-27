@@ -1,3 +1,4 @@
 export const register = (req, res) => {
-    res.send('User Register');
+    console.log(req.body);
+    res.json('User Register');
 }
