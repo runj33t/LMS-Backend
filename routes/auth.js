@@ -13,9 +13,12 @@ const router = express.Router(); // by doing this we get Router functionality in
 //      wherever required.
 
 // controllers
-import { register } from '../controllers/auth'
+import { register, login } from '../controllers/auth'
 
 // post request means data coming from the client side.
 router.post('/register', register);
+
+// login
+router.post('/login', login);
 
 module.exports = router;

@@ -35,5 +35,5 @@ export const hashPassword = (password) => {
 // this function compares the hashed password and passwrod received password
 // from the user
 export const comparePassword = (password, hashed) => {
-    return bcrypt.compare(password, hashed);
+    return bcrypt.compare(password, hashed);    // it will return a boolen i.e. either true or false after comparing the passwords
 }
