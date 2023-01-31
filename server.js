@@ -8,10 +8,15 @@ import fs from "fs";             // nodejs filesytem
 
 import mongoose from "mongoose";
 
+import csrf from 'csurf'     // in order to protect against CSRF (cross site request forgery) attacks
+
 const morgan = require("morgan"); // helps to get endpoints in our console like GET '/', used for debugging.
 
 require("dotenv").config();     // to access environment variables
 
+// CSRF protection
+const csrfProtection = csrf({ cookie: true });
+import cookieParser from "cookie-parser";
 
 // creating an EXPRESS app
 // with this 'app' created using express, we can deal with middlewares and routes
@@ -28,6 +33,7 @@ mongoose.connect(process.env.DATABASE, {})
 app.use(cors());
 app.use(express.json());        // this middleware allows us to use req.body, else we will have errors
 app.use(morgan("dev"));
+app.use(cookieParser());        // this middleware is used for cookie based auth and for CSRF protection
 // example of user defined middleware
 // app.use((req, res, next)=>{
 //     console.log("This middleware is created by a user");
@@ -51,6 +57,13 @@ app.use(morgan("dev"));
 fs.readdirSync('./routes').map((route_file) =>
     app.use('/api', require(`./routes/${route_file}`))
 );
+
+// CSRF middle ware
+app.use(csrfProtection);
+// CSRF endpoint
+app.get('/api/csrf-token', (req, res) => {
+    res.json({ csrfToken: req.csrfToken() });
+});
 
 // on which port we want to run our backend server (the port should be different than the port where frontEnd is running)
 const port = process.env.PORT || 8000;
