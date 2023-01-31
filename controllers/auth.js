@@ -98,11 +98,25 @@ export const login = async (req, res) => {
 
 // log out
 export const logout = async (req, res) => {
-    try{
+    try {
         // while logIn we sent the cookie, now for log out we clear the cookie (cookie named as token in logIn controller)
         res.clearCookie("token");
-        return res.json({message: "Signed Out Successfully"});
-    }catch(err){
+        return res.json({ message: "Signed Out Successfully" });
+    } catch (err) {
+        console.log("Error : ", err);
+    }
+}
+
+
+// this controller function is to get valid user
+export const currentUser = async (req, res) => {
+    try {
+        //                                             the ' - ' sign before property means exclude that info    
+        const user = await User.findById(req.auth._id).select('-password').exec();
+        console.log("Current User", user);
+        // return res.json(user);
+        return res.json({ ok: true });
+    } catch (err) {
         console.log("Error : ", err);
     }
 }

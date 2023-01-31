@@ -12,8 +12,11 @@ const router = express.Router(); // by doing this we get Router functionality in
 // i.e. we can make use of CONTROLLERS - controllers are nothing but functions that can be called
 //      wherever required.
 
+// middlewares
+import { requireSignIn } from '../middleware';
+
 // controllers
-import { register, login, logout } from '../controllers/auth'
+import { register, login, logout, currentUser } from '../controllers/auth'
 
 // post request means data coming from the client side.
 router.post('/register', register);
@@ -23,5 +26,8 @@ router.post('/login', login);
 
 // logout
 router.get('/logout', logout);
+
+// to get the current user
+router.get('/current-user', requireSignIn, currentUser);
 
 module.exports = router;
