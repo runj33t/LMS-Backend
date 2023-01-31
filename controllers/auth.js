@@ -2,6 +2,8 @@ import User from '../models/user'
 import { hashPassword, comparePassword } from '../utils/auth'
 import jwt from 'jsonwebtoken'
 
+
+// register 
 export const register = async (req, res) => {
     //
 
@@ -51,6 +53,8 @@ export const register = async (req, res) => {
     }
 }
 
+
+// logIn
 export const login = async (req, res) => {
 
     try {
@@ -90,4 +94,15 @@ export const login = async (req, res) => {
         return res.status(400).send("Try Again");
     }
 
+}
+
+// log out
+export const logout = async (req, res) => {
+    try{
+        // while logIn we sent the cookie, now for log out we clear the cookie (cookie named as token in logIn controller)
+        res.clearCookie("token");
+        return res.json({message: "Signed Out Successfully"});
+    }catch(err){
+        console.log("Error : ", err);
+    }
 }
