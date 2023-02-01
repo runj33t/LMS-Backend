@@ -16,7 +16,7 @@ const router = express.Router(); // by doing this we get Router functionality in
 import { requireSignIn } from '../middleware';
 
 // controllers
-import { register, login, logout, currentUser } from '../controllers/auth'
+import { register, login, logout, currentUser, sendEmail } from '../controllers/auth'
 
 // post request means data coming from the client side.
 router.post('/register', register);
@@ -29,5 +29,8 @@ router.get('/logout', logout);
 
 // to get the current user
 router.get('/current-user', requireSignIn, currentUser);
+
+// send Email SES AWS
+router.get('/send-email', sendEmail);
 
 module.exports = router;

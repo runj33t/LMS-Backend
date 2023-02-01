@@ -2,8 +2,20 @@ import User from '../models/user'
 import { hashPassword, comparePassword } from '../utils/auth'
 import jwt from 'jsonwebtoken'
 
+// aws
+import AWS from 'aws-sdk';
 
-// register 
+// configuring aws
+const awsConfig = {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION,
+    apiVersion: process.env.AWS_API_VERSION,
+}
+
+const SES = new AWS.SES(awsConfig);
+
+// register function
 export const register = async (req, res) => {
     //
 
@@ -64,6 +76,7 @@ export const login = async (req, res) => {
 
         // check if user with that email is registered in the database
         const user = await User.findOne({ email }).exec();
+        // if user is not present that means user needs to register before  login
         if (!user) return res.status(400).send("User does not exit!");
 
         // check password
@@ -118,5 +131,53 @@ export const currentUser = async (req, res) => {
         return res.json({ ok: true });
     } catch (err) {
         console.log("Error : ", err);
+    }
+}
+
+
+// send email using AWS SES
+export const sendEmail = async (req, res) => {
+    try {
+        // return res.json({ok: true});
+        // return res.status(200).send("Email Sent");
+        // return res.status(200).json({message: "Email sent bro"})
+
+        const params = {
+            Source: process.env.EMAIL_FROM,
+            Destination: {
+                ToAddresses: ['ranjeet2019ec027abesit@gmail.com'],
+            },
+            ReplyToAddresses: [process.env.EMAIL_FROM],
+            Message: {
+                Body: {
+                    Html: {
+                        Charset: "UTF-8",
+                        Data: `
+                            <html>
+                                <h1> RESET Password Link </h1>
+                                <p>use following link to reset your password</p>
+                            </html>
+                        `,
+                    },
+                },
+                Subject: {
+                    Charset: "UTF-8",
+                    Data: "Password Reset Link",
+                }
+            }
+        }
+
+        const emailSent = SES.sendEmail(params).promise();
+
+        emailSent.then((data) => {
+            console.log(data);
+            res.json({ ok: true });
+        })
+            .catch((err) => {
+                console.log(err);
+            })
+
+    } catch (err) {
+        console.log("Email Sending Failed  ", err);
     }
 }
