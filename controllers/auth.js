@@ -1,6 +1,7 @@
 import User from '../models/user'
 import { hashPassword, comparePassword } from '../utils/auth'
 import jwt from 'jsonwebtoken'
+import nanoid from 'nanoid'       // to generate unique string Ids
 
 // aws
 import AWS from 'aws-sdk';
@@ -135,19 +136,77 @@ export const currentUser = async (req, res) => {
 }
 
 
-// send email using AWS SES
-export const sendEmail = async (req, res) => {
-    try {
-        // return res.json({ok: true});
-        // return res.status(200).send("Email Sent");
-        // return res.status(200).json({message: "Email sent bro"})
+// sending test email using AWS SES
+// export const sendEmail = async (req, res) => {
+//     try {
+//         // return res.json({ok: true});
+//         // return res.status(200).send("Email Sent");
+//         // return res.status(200).json({message: "Email sent bro"})
 
+//          // below is template on how to prepare a parameter with email template that has to be sent
+//         const params = {
+//             Source: process.env.EMAIL_FROM,
+//             Destination: {
+//                 ToAddresses: ['ranjeet2019ec027abesit@gmail.com'],
+//             },
+//             ReplyToAddresses: [process.env.EMAIL_FROM],
+//             Message: {
+//                 Body: {
+//                     Html: {
+//                         Charset: "UTF-8",
+//                         Data: `
+//                             <html>
+//                                 <h1> RESET Password Link </h1>
+//                                 <p>use following link to reset your password</p>
+//                             </html>
+//                         `,
+//                     },
+//                 },
+//                 Subject: {
+//                     Charset: "UTF-8",
+//                     Data: "Password Reset Link",
+//                 }
+//             }
+//         }
+
+//         const emailSent = SES.sendEmail(params).promise();
+
+//         emailSent.then((data) => {
+//             console.log(data);
+//             res.json({ ok: true });
+//         })
+//             .catch((err) => {
+//                 console.log(err);
+//             })
+
+//     } catch (err) {
+//         console.log("Email Sending Failed  ", err);
+//     }
+// }
+
+export const forgotPassword = async (req, res) => {
+    try {
+        // get email from requested body
+        const { email } = req.body;
+        // console.log(email);
+
+        // creating a short code
+        const shortCode = nanoid(6).toUpperCase();
+
+        // find if user exists with that email or not
+        //                                      find user based on email and set passwordResetCode
+        const user = await User.findOneAndUpdate({ email }, { passwordResetCode: shortCode });
+
+        if (!user) {
+            return res.status(400).send("User Doesn't Exists!");
+        }
+
+        // param for email to be sent
         const params = {
             Source: process.env.EMAIL_FROM,
             Destination: {
-                ToAddresses: ['ranjeet2019ec027abesit@gmail.com'],
+                ToAddresses: [email],
             },
-            ReplyToAddresses: [process.env.EMAIL_FROM],
             Message: {
                 Body: {
                     Html: {
@@ -155,29 +214,60 @@ export const sendEmail = async (req, res) => {
                         Data: `
                             <html>
                                 <h1> RESET Password Link </h1>
-                                <p>use following link to reset your password</p>
+                                <p>use following code to reset your password</p>
+                                <h2>${shortCode}</h2>
+                                <i>LMS Platform</i>
                             </html>
                         `,
                     },
                 },
                 Subject: {
                     Charset: "UTF-8",
-                    Data: "Password Reset Link",
+                    Data: "Password Reset",
                 }
             }
         }
 
         const emailSent = SES.sendEmail(params).promise();
 
-        emailSent.then((data) => {
-            console.log(data);
-            res.json({ ok: true });
-        })
+        emailSent
+            .then((data) => {
+                console.log("Email sent : ", data);
+                res.json({ ok: true });
+            })
             .catch((err) => {
-                console.log(err);
+                console.log("AWS email send error : ", err);
             })
 
     } catch (err) {
-        console.log("Email Sending Failed  ", err);
+        console.log("Forgot Password Error : ", err);
+    }
+}
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { email, code, newPassword } = req.body;
+        // console.table({email, code, newPassword});
+
+        // hash the new password
+        const hashedPassword = await hashPassword(newPassword);
+
+        // find user using emal and password reset code
+        const user = User.findOneAndUpdate({
+            email,
+            passwordResetCode: code,
+        },
+            {
+                // update the password
+                password: hashedPassword,
+                // set back password reset code to empty string
+                passwordResetCode: "",
+            }
+        ).exec();
+
+        res.json({ ok: true });
+
+    } catch (err) {
+        console.log("Reset Password Error : ", err);
     }
 }
